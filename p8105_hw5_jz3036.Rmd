@@ -17,19 +17,21 @@ library(tidyverse)
 ```{r file_names}
 file_names = list.files(path = './data') %>%
   tibble('subject' = .)
-
+head(file_names) %>% 
+  knitr::kable() 
 ```
 
 * Iterate over file names and read in data for each subject using purrr::map and saving the result as a new variable in the dataframe.
-
 ```{r read_in_tables, message = FALSE}
 data = 
   file_names %>% 
   mutate(., path = paste('./data/', subject, sep='')) %>% 
   mutate(., arm_data = map(.x = path, ~read_csv(file = .x)))
+head(data) %>% 
+  knitr::kable() 
 ```
 
-* Tidy the result; manipulate file names to include control arm and subject ID, make sure weekly observations are “tidy”, and do any other tidying that’s necessary
+* Tidy the result; manipulate file names to include control arm and subject ID, make sure weekly observations are “tidy”, and do any other tidying that’s necessary.
 ```{r tidy_data}
 tidy_data = 
   select(data, subject, arm_data) %>% 
@@ -38,5 +40,20 @@ tidy_data =
   separate(., subject, into = c('group','subject_id'), sep = '_') %>% 
   gather(., key = week, value = observation, week_1:week_8) %>% 
   mutate(., week = str_replace(week, 'week_', ''))
+head(tidy_data) %>% 
+  knitr::kable() 
 ```
 
+* Make a spaghetti plot showing observations on each subject over time, and comment on differences between groups.
+```{r spaghetti_plot}
+tidy_data %>% 
+  ggplot(., aes(x = week, y = observation, group=interaction(group, subject_id), color = subject_id, shape = group)) +
+  geom_point(color = 'black', size = 3, alpha = 0.8, stroke = 1) +
+  scale_shape_manual(values=c(1,2)) +
+  geom_line() +
+  labs(title = 'Spaghetti Plot for Each Subject') +
+  theme(plot.title = element_text(hjust = 0.5))
+```
+As shown by the spaghetti plot above, the experimental group (triangle) is generally higher than the control group (circle) on observation across these 8 weeks.
+
+# Problem 2
