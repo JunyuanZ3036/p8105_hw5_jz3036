@@ -58,7 +58,7 @@ As shown by the spaghetti plot above, the experimental group (triangle) is gener
 
 # Problem 2
 
-```{r data_import_p2}
+```{r data_import_p2, message = FALSE}
 data_p2 = 
   read_csv(file='./homicide_data/homicide-data.csv')
 ```
@@ -68,11 +68,34 @@ data_p2 =
 This is a dataset collected by Washington Post regarding criminal homicide over the past years in 50 America cities.The raw data contains `r nrow(data_p2)` rows/observations, and `r ncol(data_p2)` columns/variables. Variables mainly includes the victims' personal info such as name, race and sex, as well as the location info of the cases, including city, state and coordinates.
 
 ```{r by_city}
-data_p2 %>%  
-  mutate(., city_state = paste(city, state, sep = ', ')) %>% 
+data_p2_city =  
+  mutate(data_p2, city_state = paste(city, state, sep = ', ')) %>% 
   group_by(., city_state) %>% 
   summarize(., case_number = n(),
                case_unsolved = 
                sum(disposition == 'Closed without arrest' | disposition == 'Open/No arrest'))
+data_p2_city
+```
+
+* For the city of Baltimore, MD, use the prop.test function to estimate the proportion of homicides that are unsolved; save the output of prop.test as an R object, apply the broom::tidy to this object and pull the estimated proportion and confidence intervals from the resulting tidy dataframe.
+
+```{r prop_test_baltimore}
+propt_baltimore = prop.test(1825, 2827, p = 0.5)
+propt_baltimore_tidy = broom::tidy(propt_baltimore)
+```
+The estimated proportion is `r pull(propt_baltimore_tidy, estimate)`.
+The CI is between `r pull(propt_baltimore_tidy, conf.low)` and `r pull(propt_baltimore_tidy, conf.high)`.
+
+
+* Now run prop.test for each of the cities in your dataset, and extract both the proportion of unsolved homicides and the confidence interval for each. Do this within a “tidy” pipeline, making use of purrr::map, purrr::map2, list columns and unnest as necessary to create a tidy dataframe with estimated proportions and CIs for each city.
+
+```{r prop_test_all_city}
+city_prop_test = 
+  mutate(data_p2_city, prop_test = map2(.x = case_number, .y = case_unsolved,
+                             ~prop.test(.y, .x) %>% broom::tidy())) %>%
+  unnest() %>% 
+  select(., city_state, case_number, case_unsolved, estimate, conf.low, conf.high)
+
+city_prop_test
 ```
 
