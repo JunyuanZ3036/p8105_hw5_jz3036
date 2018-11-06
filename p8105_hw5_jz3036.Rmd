@@ -8,7 +8,6 @@ date: 2018-11-04
 * Import necessary packages.
 ```{r import_packages}
 library(tidyverse)
-#library(readxl)
 ```
 
 # Problem 1
@@ -94,8 +93,22 @@ city_prop_test =
   mutate(data_p2_city, prop_test = map2(.x = case_number, .y = case_unsolved,
                              ~prop.test(.y, .x) %>% broom::tidy())) %>%
   unnest() %>% 
-  select(., city_state, case_number, case_unsolved, estimate, conf.low, conf.high)
+  select(., city_state, case_number, case_unsolved, estimate, conf.low, conf.high) %>% 
+  janitor::clean_names()
 
 city_prop_test
 ```
 
+* Create a plot that shows the estimates and CIs for each city – check out geom_errorbar for a way to add error bars based on the upper and lower limits. Organize cities according to the proportion of unsolved homicides.
+
+```{r prop_test_plot}
+city_prop_test %>% 
+  mutate(., city_state = fct_reorder(city_state, -estimate)) %>% 
+  ggplot(., aes(x = city_state, y = estimate)) +
+  geom_point() +
+  geom_errorbar(aes(ymax = conf_high, ymin=conf_low)) +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1),
+        plot.title = element_text(hjust = 0.5)) +
+  labs(title = 'Estimates and CIs for Each City')
+```
+Tulsa, AL only has 1 case number. That's why it looks weird.
