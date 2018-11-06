@@ -57,3 +57,22 @@ tidy_data %>%
 As shown by the spaghetti plot above, the experimental group (triangle) is generally higher than the control group (circle) on observation across these 8 weeks.
 
 # Problem 2
+
+```{r data_import_p2}
+data_p2 = 
+  read_csv(file='./homicide_data/homicide-data.csv')
+```
+
+* Describe the raw data. Create a city_state variable (e.g. “Baltimore, MD”) and then summarize within cities to obtain the total number of homicides and the number of unsolved homicides (those for which the disposition is “Closed without arrest” or “Open/No arrest”).
+
+This is a dataset collected by Washington Post regarding criminal homicide over the past years in 50 America cities.The raw data contains `r nrow(data_p2)` rows/observations, and `r ncol(data_p2)` columns/variables. Variables mainly includes the victims' personal info such as name, race and sex, as well as the location info of the cases, including city, state and coordinates.
+
+```{r by_city}
+data_p2 %>%  
+  mutate(., city_state = paste(city, state, sep = ', ')) %>% 
+  group_by(., city_state) %>% 
+  summarize(., case_number = n(),
+               case_unsolved = 
+               sum(disposition == 'Closed without arrest' | disposition == 'Open/No arrest'))
+```
+
