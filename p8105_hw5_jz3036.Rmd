@@ -53,6 +53,7 @@ tidy_data %>%
   labs(title = 'Spaghetti Plot for Each Subject') +
   theme(plot.title = element_text(hjust = 0.5))
 ```
+
 As shown by the spaghetti plot above, the experimental group (triangle) is generally higher than the control group (circle) on observation across these 8 weeks.
 
 # Problem 2
@@ -111,4 +112,5 @@ city_prop_test %>%
         plot.title = element_text(hjust = 0.5)) +
   labs(title = 'Estimates and CIs for Each City')
 ```
+
 Tulsa, AL only has 1 case number. That's why it looks weird.
